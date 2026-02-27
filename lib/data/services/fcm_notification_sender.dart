@@ -53,8 +53,7 @@ class FcmNotificationSender {
     } catch (e) {
       return FcmSendResult(
         success: false,
-        message:
-            'Cannot connect to server. Is it running on localhost:8080?\n\nError: $e',
+        message: 'Cannot connect to server.\n\nError: $e',
       );
     }
   }
