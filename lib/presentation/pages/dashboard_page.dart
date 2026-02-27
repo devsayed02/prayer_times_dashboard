@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prayer_times_dashboard/presentation/pages/notification_history_page.dart';
 import 'package:prayer_times_dashboard/presentation/pages/send_notification_page.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -19,6 +20,10 @@ class _DashboardPageState extends State<DashboardPage> {
     _NavItem(
       icon: Icons.notifications_active,
       label: 'Send Notification',
+    ),
+    _NavItem(
+      icon: Icons.history,
+      label: 'History',
     ),
   ];
 
@@ -94,6 +99,8 @@ class _DashboardPageState extends State<DashboardPage> {
         );
       case 1:
         return const SendNotificationPage();
+      case 2:
+        return const NotificationHistoryPage();
       default:
         return _DashboardHome(
           onNavigate: (index) => setState(() => _selectedIndex = index),
@@ -151,6 +158,13 @@ class _DashboardHome extends StatelessWidget {
                   subtitle: 'Send push notifications to all or single user',
                   color: Colors.blue,
                   onTap: () => onNavigate(1),
+                ),
+                _DashboardCard(
+                  icon: Icons.history,
+                  title: 'Notification History',
+                  subtitle: 'View log of all sent notifications',
+                  color: Colors.orange,
+                  onTap: () => onNavigate(2),
                 ),
               ],
             ),
