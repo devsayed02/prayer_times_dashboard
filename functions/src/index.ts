@@ -32,17 +32,18 @@ export const sendNotification = onRequest((req, res) => {
         return;
       }
 
+      // Build data payload — only include imageUrl/actionUrl if they have values
+      const data: {[key: string]: string} = {type: "push"};
+      if (imageUrl) data.imageUrl = imageUrl;
+      if (actionUrl) data.actionUrl = actionUrl;
+
       // Build FCM message
       const message: admin.messaging.Message = {
         notification: {
           title,
           body,
         },
-        data: {
-          type: "push",
-          imageUrl: imageUrl || "",
-          actionUrl: actionUrl || "",
-        },
+        data,
         android: {
           priority: "high",
           notification: {
