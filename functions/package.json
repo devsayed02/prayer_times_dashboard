@@ -1,0 +1,23 @@
+{
+  "name": "prayer-times-functions",
+  "description": "Cloud Functions for Prayer Times Dashboard",
+  "scripts": {
+    "build": "tsc",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^13.0.0",
+    "firebase-functions": "^6.3.0",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/cors": "^2.8.17"
+  },
+  "private": true
+}
