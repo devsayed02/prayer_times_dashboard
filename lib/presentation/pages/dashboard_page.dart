@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prayer_times_dashboard/presentation/pages/events_management_page.dart';
 import 'package:prayer_times_dashboard/presentation/pages/notification_history_page.dart';
 import 'package:prayer_times_dashboard/presentation/pages/send_notification_page.dart';
 
@@ -24,6 +25,10 @@ class _DashboardPageState extends State<DashboardPage> {
     _NavItem(
       icon: Icons.history,
       label: 'History',
+    ),
+    _NavItem(
+      icon: Icons.event,
+      label: 'Events',
     ),
   ];
 
@@ -101,6 +106,8 @@ class _DashboardPageState extends State<DashboardPage> {
         return const SendNotificationPage();
       case 2:
         return const NotificationHistoryPage();
+      case 3:
+        return const EventsManagementPage();
       default:
         return _DashboardHome(
           onNavigate: (index) => setState(() => _selectedIndex = index),
@@ -165,6 +172,13 @@ class _DashboardHome extends StatelessWidget {
                   subtitle: 'View log of all sent notifications',
                   color: Colors.orange,
                   onTap: () => onNavigate(2),
+                ),
+                _DashboardCard(
+                  icon: Icons.event,
+                  title: 'Islamic Events',
+                  subtitle: 'Manage holidays and Islamic events',
+                  color: Colors.green,
+                  onTap: () => onNavigate(3),
                 ),
               ],
             ),

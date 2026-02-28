@@ -5,5 +5,11 @@ class FcmConstants {
       'https://sendnotification-idfcqgfusa-uc.a.run.app';
 
   static const String notificationHistoryUrl =
-      'https://us-central1-prayer-times-6163f.cloudfunctions.net/getNotificationHistory';
+      'https://getnotificationhistory-idfcqgfusa-uc.a.run.app';
+
+  static const String eventsUrl =
+      'https://us-central1-prayer-times-6163f.cloudfunctions.net/getEvents';
+
+  static const String manageEventUrl =
+      'https://us-central1-prayer-times-6163f.cloudfunctions.net/manageEvent';
 }

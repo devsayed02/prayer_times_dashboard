@@ -98,6 +98,149 @@ export const sendNotification = onRequest((req, res) => {
   });
 });
 
+// ==================== EVENTS ====================
+
+export const getEvents = onRequest((req, res) => {
+  corsHandler(req, res, async () => {
+    if (req.method !== "GET") {
+      res.status(405).json({success: false, message: "Method not allowed"});
+      return;
+    }
+
+    try {
+      const year = parseInt(req.query.year as string) || new Date().getFullYear();
+
+      const snapshot = await db
+        .collection("events")
+        .where("year", "==", year)
+        .orderBy("date", "asc")
+        .get();
+
+      const events = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        title: doc.data().title ?? "",
+        description: doc.data().description ?? "",
+        holiday_type: doc.data().holiday_type ?? "",
+        date: doc.data().date ?? "",
+        color: doc.data().color ?? "#FF4CAF50",
+        year: doc.data().year ?? year,
+        is_active: doc.data().is_active ?? true,
+      }));
+
+      res.status(200).json({success: true, data: events});
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({
+        success: false,
+        message: `Failed to fetch events: ${errorMessage}`,
+      });
+    }
+  });
+});
+
+export const manageEvent = onRequest((req, res) => {
+  corsHandler(req, res, async () => {
+    if (req.method !== "POST") {
+      res.status(405).json({success: false, message: "Method not allowed"});
+      return;
+    }
+
+    try {
+      const {action, id, title, description, holiday_type, date, color, year, is_active} = req.body;
+
+      if (!action) {
+        res.status(400).json({success: false, message: "action is required"});
+        return;
+      }
+
+      const eventsRef = db.collection("events");
+
+      switch (action) {
+      case "create": {
+        if (!title || !date) {
+          res.status(400).json({success: false, message: "title and date are required"});
+          return;
+        }
+        const docRef = await eventsRef.add({
+          title,
+          description: description || "",
+          holiday_type: holiday_type || "",
+          date,
+          color: color || "#FF4CAF50",
+          year: year || new Date().getFullYear(),
+          is_active: is_active !== undefined ? is_active : true,
+        });
+        res.status(200).json({
+          success: true,
+          message: "Event created successfully!",
+          id: docRef.id,
+        });
+        break;
+      }
+
+      case "update": {
+        if (!id) {
+          res.status(400).json({success: false, message: "id is required for update"});
+          return;
+        }
+        const updateData: {[key: string]: unknown} = {};
+        if (title !== undefined) updateData.title = title;
+        if (description !== undefined) updateData.description = description;
+        if (holiday_type !== undefined) updateData.holiday_type = holiday_type;
+        if (date !== undefined) updateData.date = date;
+        if (color !== undefined) updateData.color = color;
+        if (year !== undefined) updateData.year = year;
+        if (is_active !== undefined) updateData.is_active = is_active;
+
+        await eventsRef.doc(id).update(updateData);
+        res.status(200).json({success: true, message: "Event updated successfully!"});
+        break;
+      }
+
+      case "delete": {
+        if (!id) {
+          res.status(400).json({success: false, message: "id is required for delete"});
+          return;
+        }
+        await eventsRef.doc(id).delete();
+        res.status(200).json({success: true, message: "Event deleted successfully!"});
+        break;
+      }
+
+      case "toggle": {
+        if (!id) {
+          res.status(400).json({success: false, message: "id is required for toggle"});
+          return;
+        }
+        const doc = await eventsRef.doc(id).get();
+        if (!doc.exists) {
+          res.status(404).json({success: false, message: "Event not found"});
+          return;
+        }
+        const currentActive = doc.data()?.is_active ?? true;
+        await eventsRef.doc(id).update({is_active: !currentActive});
+        res.status(200).json({
+          success: true,
+          message: `Event ${!currentActive ? "activated" : "deactivated"} successfully!`,
+        });
+        break;
+      }
+
+      default:
+        res.status(400).json({success: false, message: `Unknown action: ${action}`});
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({
+        success: false,
+        message: `Failed to manage event: ${errorMessage}`,
+      });
+    }
+  });
+});
+
+// ==================== NOTIFICATION HISTORY ====================
+
 export const getNotificationHistory = onRequest((req, res) => {
   corsHandler(req, res, async () => {
     if (req.method !== "GET") {
