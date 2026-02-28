@@ -12,4 +12,10 @@ class FcmConstants {
 
   static const String manageEventUrl =
       'https://us-central1-prayer-times-6163f.cloudfunctions.net/manageEvent';
+
+  static const String appUpdateUrl =
+      'https://us-central1-prayer-times-6163f.cloudfunctions.net/getAppUpdate';
+
+  static const String updateAppUpdateUrl =
+      'https://us-central1-prayer-times-6163f.cloudfunctions.net/updateAppUpdate';
 }

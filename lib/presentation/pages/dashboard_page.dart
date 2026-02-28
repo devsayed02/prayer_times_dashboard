@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prayer_times_dashboard/presentation/pages/app_update_page.dart';
 import 'package:prayer_times_dashboard/presentation/pages/events_management_page.dart';
 import 'package:prayer_times_dashboard/presentation/pages/notification_history_page.dart';
 import 'package:prayer_times_dashboard/presentation/pages/send_notification_page.dart';
@@ -29,6 +30,10 @@ class _DashboardPageState extends State<DashboardPage> {
     _NavItem(
       icon: Icons.event,
       label: 'Events',
+    ),
+    _NavItem(
+      icon: Icons.system_update,
+      label: 'App Update',
     ),
   ];
 
@@ -108,6 +113,8 @@ class _DashboardPageState extends State<DashboardPage> {
         return const NotificationHistoryPage();
       case 3:
         return const EventsManagementPage();
+      case 4:
+        return const AppUpdatePage();
       default:
         return _DashboardHome(
           onNavigate: (index) => setState(() => _selectedIndex = index),
@@ -179,6 +186,13 @@ class _DashboardHome extends StatelessWidget {
                   subtitle: 'Manage holidays and Islamic events',
                   color: Colors.green,
                   onTap: () => onNavigate(3),
+                ),
+                _DashboardCard(
+                  icon: Icons.system_update,
+                  title: 'App Update',
+                  subtitle: 'Control app version and force updates',
+                  color: Colors.purple,
+                  onTap: () => onNavigate(4),
                 ),
               ],
             ),

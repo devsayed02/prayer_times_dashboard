@@ -98,6 +98,80 @@ export const sendNotification = onRequest((req, res) => {
   });
 });
 
+// ==================== APP UPDATE ====================
+
+export const getAppUpdate = onRequest((req, res) => {
+  corsHandler(req, res, async () => {
+    if (req.method !== "GET") {
+      res.status(405).json({success: false, message: "Method not allowed"});
+      return;
+    }
+
+    try {
+      const doc = await db.collection("settings").doc("app_update").get();
+
+      if (!doc.exists) {
+        res.status(200).json({
+          success: true,
+          data: {
+            title: "",
+            change_logs: "",
+            latest_version: "",
+            min_supported_version: "",
+            force_update: false,
+            store_url: "",
+            ios_store_url: "",
+          },
+        });
+        return;
+      }
+
+      res.status(200).json({success: true, data: doc.data()});
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({
+        success: false,
+        message: `Failed to fetch app update: ${errorMessage}`,
+      });
+    }
+  });
+});
+
+export const updateAppUpdate = onRequest((req, res) => {
+  corsHandler(req, res, async () => {
+    if (req.method !== "POST") {
+      res.status(405).json({success: false, message: "Method not allowed"});
+      return;
+    }
+
+    try {
+      const data = req.body;
+
+      const updateData: {[key: string]: unknown} = {};
+      if (data.title !== undefined) updateData.title = data.title;
+      if (data.change_logs !== undefined) updateData.change_logs = data.change_logs;
+      if (data.latest_version !== undefined) updateData.latest_version = data.latest_version;
+      if (data.min_supported_version !== undefined) updateData.min_supported_version = data.min_supported_version;
+      if (data.force_update !== undefined) updateData.force_update = data.force_update;
+      if (data.store_url !== undefined) updateData.store_url = data.store_url;
+      if (data.ios_store_url !== undefined) updateData.ios_store_url = data.ios_store_url;
+
+      await db.collection("settings").doc("app_update").set(updateData, {merge: true});
+
+      res.status(200).json({
+        success: true,
+        message: "App update settings saved successfully!",
+      });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({
+        success: false,
+        message: `Failed to update: ${errorMessage}`,
+      });
+    }
+  });
+});
+
 // ==================== EVENTS ====================
 
 export const getEvents = onRequest((req, res) => {
