@@ -18,4 +18,7 @@ class FcmConstants {
 
   static const String updateAppUpdateUrl =
       'https://us-central1-prayer-times-6163f.cloudfunctions.net/updateAppUpdate';
+
+  static const String analyticsUrl =
+      'https://us-central1-prayer-times-6163f.cloudfunctions.net/getAnalytics';
 }

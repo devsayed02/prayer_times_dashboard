@@ -313,6 +313,129 @@ export const manageEvent = onRequest((req, res) => {
   });
 });
 
+// ==================== ANALYTICS ====================
+
+export const getAnalytics = onRequest((req, res) => {
+  corsHandler(req, res, async () => {
+    if (req.method !== "GET") {
+      res.status(405).json({success: false, message: "Method not allowed"});
+      return;
+    }
+
+    try {
+      const [devicesSnapshot, logsSnapshot] = await Promise.all([
+        db.collection("device_tokens").get(),
+        db.collection("notification_logs").get(),
+      ]);
+
+      const now = new Date();
+      const ms24h = 24 * 60 * 60 * 1000;
+      const ms7d = 7 * ms24h;
+      const ms30d = 30 * ms24h;
+
+      let active24h = 0;
+      let active7d = 0;
+      let active30d = 0;
+      const platformMap: {[key: string]: number} = {};
+      const versionMap: {[key: string]: number} = {};
+      const brandMap: {[key: string]: number} = {};
+      const trendMap: {[key: string]: number} = {};
+
+      const trendStart = new Date(now.getTime() - ms30d);
+
+      for (const doc of devicesSnapshot.docs) {
+        const data = doc.data();
+
+        // Active users
+        const updatedAt = data.updated_at?.toDate?.();
+        if (updatedAt) {
+          const diff = now.getTime() - updatedAt.getTime();
+          if (diff <= ms24h) active24h++;
+          if (diff <= ms7d) active7d++;
+          if (diff <= ms30d) active30d++;
+        }
+
+        // Platform distribution
+        const platform = data.platform || "unknown";
+        platformMap[platform] = (platformMap[platform] || 0) + 1;
+
+        // App version distribution
+        const version = data.app_version || "unknown";
+        versionMap[version] = (versionMap[version] || 0) + 1;
+
+        // Brand distribution
+        const brand = (data.brand || "unknown").toLowerCase();
+        brandMap[brand] = (brandMap[brand] || 0) + 1;
+
+        // Registration trend (last 30 days)
+        const createdAt = data.created_at?.toDate?.();
+        if (createdAt && createdAt >= trendStart) {
+          const dateKey = createdAt.toISOString().split("T")[0];
+          trendMap[dateKey] = (trendMap[dateKey] || 0) + 1;
+        }
+      }
+
+      // Notification stats
+      let notifSuccess = 0;
+      let notifFail = 0;
+      for (const doc of logsSnapshot.docs) {
+        const data = doc.data();
+        if (data.status === "success") notifSuccess++;
+        else notifFail++;
+      }
+
+      // Sort and format distributions
+      const platformDistribution = Object.entries(platformMap)
+        .map(([platform, count]) => ({platform, count}))
+        .sort((a, b) => b.count - a.count);
+
+      const appVersionDistribution = Object.entries(versionMap)
+        .map(([version, count]) => ({version, count}))
+        .sort((a, b) => b.count - a.count);
+
+      const brandDistribution = Object.entries(brandMap)
+        .map(([brand, count]) => ({brand, count}))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+
+      // Fill 30-day trend
+      const registrationTrend: {date: string; count: number}[] = [];
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(now.getTime() - i * ms24h);
+        const dateKey = d.toISOString().split("T")[0];
+        registrationTrend.push({date: dateKey, count: trendMap[dateKey] || 0});
+      }
+
+      res.status(200).json({
+        success: true,
+        data: {
+          totalUsers: devicesSnapshot.size,
+          activeUsers: {
+            last24h: active24h,
+            last7d: active7d,
+            last30d: active30d,
+          },
+          notificationStats: {
+            total: notifSuccess + notifFail,
+            success: notifSuccess,
+            fail: notifFail,
+          },
+          platformDistribution,
+          appVersionDistribution,
+          brandDistribution,
+          registrationTrend,
+        },
+      });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({
+        success: false,
+        message: `Failed to fetch analytics: ${errorMessage}`,
+      });
+    }
+  });
+});
+
 // ==================== NOTIFICATION HISTORY ====================
 
 export const getNotificationHistory = onRequest((req, res) => {

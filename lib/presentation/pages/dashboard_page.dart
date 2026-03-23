@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prayer_times_dashboard/presentation/pages/analytics_page.dart';
 import 'package:prayer_times_dashboard/presentation/pages/app_update_page.dart';
 import 'package:prayer_times_dashboard/presentation/pages/events_management_page.dart';
 import 'package:prayer_times_dashboard/presentation/pages/notification_history_page.dart';
@@ -18,6 +19,10 @@ class _DashboardPageState extends State<DashboardPage> {
     _NavItem(
       icon: Icons.dashboard,
       label: 'Dashboard',
+    ),
+    _NavItem(
+      icon: Icons.analytics,
+      label: 'Analytics',
     ),
     _NavItem(
       icon: Icons.notifications_active,
@@ -108,12 +113,14 @@ class _DashboardPageState extends State<DashboardPage> {
           onNavigate: (index) => setState(() => _selectedIndex = index),
         );
       case 1:
-        return const SendNotificationPage();
+        return const AnalyticsPage();
       case 2:
-        return const NotificationHistoryPage();
+        return const SendNotificationPage();
       case 3:
-        return const EventsManagementPage();
+        return const NotificationHistoryPage();
       case 4:
+        return const EventsManagementPage();
+      case 5:
         return const AppUpdatePage();
       default:
         return _DashboardHome(
@@ -167,32 +174,39 @@ class _DashboardHome extends StatelessWidget {
               runSpacing: 16,
               children: [
                 _DashboardCard(
+                  icon: Icons.analytics,
+                  title: 'User Analytics',
+                  subtitle: 'View user statistics and trends',
+                  color: Colors.teal,
+                  onTap: () => onNavigate(1),
+                ),
+                _DashboardCard(
                   icon: Icons.notifications_active,
                   title: 'Send Notification',
                   subtitle: 'Send push notifications to all or single user',
                   color: Colors.blue,
-                  onTap: () => onNavigate(1),
+                  onTap: () => onNavigate(2),
                 ),
                 _DashboardCard(
                   icon: Icons.history,
                   title: 'Notification History',
                   subtitle: 'View log of all sent notifications',
                   color: Colors.orange,
-                  onTap: () => onNavigate(2),
+                  onTap: () => onNavigate(3),
                 ),
                 _DashboardCard(
                   icon: Icons.event,
                   title: 'Islamic Events',
                   subtitle: 'Manage holidays and Islamic events',
                   color: Colors.green,
-                  onTap: () => onNavigate(3),
+                  onTap: () => onNavigate(4),
                 ),
                 _DashboardCard(
                   icon: Icons.system_update,
                   title: 'App Update',
                   subtitle: 'Control app version and force updates',
                   color: Colors.purple,
-                  onTap: () => onNavigate(4),
+                  onTap: () => onNavigate(5),
                 ),
               ],
             ),
