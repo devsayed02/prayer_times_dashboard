@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="bn" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#4D7AEB">
+  <title>Prayer Times — Admin Dashboard</title>
+  <link rel="icon" href="/assets/images/app_logo.png">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <img src="/assets/images/app_logo.png" alt="Prayer Times logo">
+        <div><strong>Prayer Times</strong><span>Admin console</span></div>
+      </div>
+      <nav class="nav" aria-label="Dashboard navigation">
+        <button class="nav-item active" data-page="overview"><span>⌂</span>ওভারভিউ</button>
+        <button class="nav-item" data-page="analytics"><span>↗</span>অ্যানালিটিক্স</button>
+        <button class="nav-item" data-page="notifications"><span>◉</span>নোটিফিকেশন</button>
+        <button class="nav-item" data-page="events"><span>◇</span>ইভেন্ট</button>
+        <button class="nav-item" data-page="content"><span>✦</span>অ্যাপ কনটেন্ট</button>
+        <button class="nav-item" data-page="payments"><span>৳</span>পেমেন্ট</button>
+        <button class="nav-item" data-page="qaris"><span>♫</span>ক্বারী</button>
+        <button class="nav-item" data-page="support"><span>♡</span>সাপোর্টার</button>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="status-dot"></span>
+        <div><strong id="projectName">prayer-times-6163f</strong><span>Firebase Admin SDK</span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-title">
+          <button class="icon-btn mobile-only" id="menuBtn" aria-label="মেনু খুলুন">☰</button>
+          <div><p id="eyebrow">আজকের সারসংক্ষেপ</p><h1 id="pageTitle">ড্যাশবোর্ড ওভারভিউ</h1></div>
+        </div>
+        <div class="topbar-actions">
+          <div class="sync-state"><span class="status-dot"></span><span id="syncText">Live</span></div>
+          <button class="icon-btn" id="themeBtn" aria-label="থিম পরিবর্তন করুন">◐</button>
+          <button class="btn btn-secondary" id="refreshBtn">↻ রিফ্রেশ</button>
+        </div>
+      </header>
+
+      <div class="notice-banner hidden" id="errorBanner" role="alert"></div>
+      <div class="loader hidden" id="loader"><span></span><p>Firebase থেকে তথ্য আনা হচ্ছে…</p></div>
+
+      <section class="page active" id="page-overview">
+        <div class="hero-card">
+          <div class="hero-copy"><span class="pill">Operations center</span><h2>আসসালামু আলাইকুম</h2><p>Prayer Times অ্যাপের live data, content এবং communication এক জায়গা থেকে পরিচালনা করুন।</p></div>
+          <div class="hero-orbit" aria-hidden="true"><div class="orbit-ring"></div><div class="hero-mark">۞</div></div>
+        </div>
+        <div class="stat-grid" id="overviewStats"></div>
+        <div class="dashboard-grid">
+          <article class="panel span-2"><div class="panel-head"><div><p class="kicker">User growth</p><h3>গত ৩০ দিনের রেজিস্ট্রেশন</h3></div><button class="text-btn" data-go="analytics">বিস্তারিত দেখুন →</button></div><div class="trend-chart" id="overviewTrend"></div></article>
+          <article class="panel"><div class="panel-head"><div><p class="kicker">Release control</p><h3>বর্তমান অ্যাপ ভার্সন</h3></div></div><div id="releaseSummary" class="summary-stack"></div><button class="btn btn-secondary full" data-go="content">রিলিজ সেটিংস খুলুন</button></article>
+          <article class="panel"><div class="panel-head"><div><p class="kicker">Community</p><h3>এই মাসের সাপোর্ট</h3></div></div><div id="supportSummary" class="summary-stack"></div><button class="btn btn-secondary full" data-go="support">সাপোর্টার দেখুন</button></article>
+          <article class="panel span-2"><div class="panel-head"><div><p class="kicker">Quick actions</p><h3>দ্রুত কাজ</h3></div></div><div class="quick-actions"><button data-go="notifications"><b>◉</b><span>Push পাঠান<small>সবাই বা নির্দিষ্ট ডিভাইসে</small></span></button><button data-go="events"><b>◇</b><span>ইভেন্ট যোগ করুন<small>ক্যালেন্ডার আপডেট করুন</small></span></button><button data-go="content"><b>✦</b><span>Notice বদলান<small>অ্যাপের ঘোষণা নিয়ন্ত্রণ করুন</small></span></button></div></article>
+        </div>
+      </section>
+
+      <section class="page" id="page-analytics">
+        <div class="section-head"><div><p class="kicker">Audience intelligence</p><h2>ব্যবহারকারী অ্যানালিটিক্স</h2></div></div>
+        <div class="stat-grid" id="analyticsStats"></div>
+        <div class="dashboard-grid">
+          <article class="panel span-2"><div class="panel-head"><h3>রেজিস্ট্রেশন ট্রেন্ড</h3><span class="muted">শেষ ৩০ দিন</span></div><div class="trend-chart tall" id="analyticsTrend"></div></article>
+          <article class="panel"><div class="panel-head"><h3>প্ল্যাটফর্ম</h3></div><div class="distribution" id="platformDistribution"></div></article>
+          <article class="panel"><div class="panel-head"><h3>অ্যাপ ভার্সন</h3></div><div class="distribution" id="versionDistribution"></div></article>
+          <article class="panel span-2"><div class="panel-head"><h3>শীর্ষ ডিভাইস ব্র্যান্ড</h3></div><div class="distribution grid-two" id="brandDistribution"></div></article>
+        </div>
+      </section>
+
+      <section class="page" id="page-notifications">
+        <div class="section-head"><div><p class="kicker">Firebase Cloud Messaging</p><h2>Push notification</h2></div></div>
+        <div class="dashboard-grid">
+          <article class="panel form-panel"><div class="panel-head"><div><h3>নতুন notification</h3><p class="muted">পাঠানোর আগে content ও target যাচাই করুন</p></div></div>
+            <form id="notificationForm" class="form-grid">
+              <label class="field"><span>Target</span><select name="target" id="notificationTarget"><option value="all_users">সকল ব্যবহারকারী</option><option value="single_user">নির্দিষ্ট ডিভাইস</option></select></label>
+              <label class="field full hidden" id="tokenField"><span>FCM token</span><textarea name="fcmToken" rows="3" placeholder="Device FCM token"></textarea></label>
+              <label class="field full"><span>Title</span><input name="title" maxlength="140" required placeholder="Notification title"></label>
+              <label class="field full"><span>Message</span><textarea name="body" maxlength="500" rows="4" required placeholder="সংক্ষিপ্ত বার্তা লিখুন"></textarea></label>
+              <label class="field"><span>Image URL <em>optional</em></span><input name="imageUrl" type="url" placeholder="https://..."></label>
+              <label class="field"><span>Action URL <em>optional</em></span><input name="actionUrl" type="url" placeholder="https://..."></label>
+              <div class="form-actions full"><p class="form-warning">সতর্কতা: “সকল ব্যবহারকারী” নির্বাচন করলে topic-এর সব subscriber বার্তাটি পাবেন।</p><button class="btn btn-primary" type="submit">Notification পাঠান</button></div>
+            </form>
+          </article>
+          <article class="panel"><div class="panel-head"><div><h3>সাম্প্রতিক history</h3><p class="muted">সর্বশেষ ৫০টি send attempt ও targeted device count</p></div></div><div class="timeline" id="notificationHistory"></div></article>
+        </div>
+      </section>
+
+      <section class="page" id="page-events">
+        <div class="section-head"><div><p class="kicker">Islamic calendar</p><h2>ইভেন্ট ম্যানেজমেন্ট</h2></div><div class="inline-actions"><label class="compact-field">বছর <input type="number" id="eventsYear" min="2020" max="2200"></label><button class="btn btn-primary" id="newEventBtn">+ নতুন ইভেন্ট</button></div></div>
+        <article class="panel"><div class="table-wrap"><table><thead><tr><th>তারিখ</th><th>ইভেন্ট</th><th>ধরন</th><th>স্ট্যাটাস</th><th></th></tr></thead><tbody id="eventsTable"></tbody></table></div></article>
+      </section>
+
+      <section class="page" id="page-content">
+        <div class="section-head"><div><p class="kicker">Remote app control</p><h2>অ্যাপ কনটেন্ট</h2></div></div>
+        <div class="dashboard-grid">
+          <article class="panel"><div class="panel-head"><div><h3>App update policy</h3><p class="muted">`settings/app_update` document</p></div></div>
+            <form id="appUpdateForm" class="form-grid">
+              <label class="field"><span>Latest version</span><input name="latest_version" required placeholder="1.2.0"></label>
+              <label class="field"><span>Minimum version</span><input name="min_supported_version" required placeholder="1.0.0"></label>
+              <label class="field full"><span>Dialog title</span><input name="title" maxlength="180" placeholder="নতুন আপডেট এসেছে"></label>
+              <label class="field full"><span>Change logs</span><textarea name="change_logs" rows="6"></textarea></label>
+              <label class="field"><span>Play Store URL</span><input name="store_url" type="url"></label>
+              <label class="field"><span>App Store URL</span><input name="ios_store_url" type="url"></label>
+              <label class="switch-row full"><input name="force_update" type="checkbox"><span><strong>Force update</strong><small>চালু থাকলে minimum version-এর নিচের client update ছাড়া চলবে না</small></span></label>
+              <div class="form-actions full"><button class="btn btn-primary" type="submit">Update policy সংরক্ষণ</button></div>
+            </form>
+          </article>
+          <article class="panel"><div class="panel-head"><div><h3>Promotional notice</h3><p class="muted">`notice/notice-bn` document</p></div></div>
+            <form id="noticeForm" class="form-grid"><label class="field full"><span>অ্যাপে দেখানো বার্তা</span><textarea name="promotional_message" rows="12" maxlength="3000" placeholder="ঘোষণা বা promotional message"></textarea></label><div class="form-actions full"><button class="btn btn-primary" type="submit">Notice সংরক্ষণ</button></div></form>
+          </article>
+        </div>
+      </section>
+
+      <section class="page" id="page-payments">
+        <div class="section-head"><div><p class="kicker">Support methods</p><h2>পেমেন্ট মাধ্যম</h2></div><button class="btn btn-primary" id="newPaymentBtn">+ পেমেন্ট মাধ্যম</button></div>
+        <div class="card-grid" id="paymentsGrid"></div>
+      </section>
+
+      <section class="page" id="page-qaris">
+        <div class="section-head"><div><p class="kicker">Qur’an audio catalogue</p><h2>ক্বারী ম্যানেজমেন্ট</h2></div><button class="btn btn-primary" id="newQariBtn">+ নতুন ক্বারী</button></div>
+        <article class="panel"><div class="table-wrap"><table><thead><tr><th>ক্বারী</th><th>ভাষা/দেশ</th><th>সূরা</th><th>ক্রম</th><th>স্ট্যাটাস</th><th></th></tr></thead><tbody id="qarisTable"></tbody></table></div></article>
+      </section>
+
+      <section class="page" id="page-support">
+        <div class="section-head"><div><p class="kicker">Google Play Billing</p><h2>সাপোর্টার ও contribution</h2></div></div>
+        <div class="stat-grid" id="supportStats"></div>
+        <article class="panel compact-panel"><form id="supportGoalForm" class="inline-form"><label class="field"><span>Monthly supporter goal</span><input type="number" name="goal" min="1" max="1000000" required></label><button class="btn btn-primary" type="submit">Goal আপডেট</button></form></article>
+        <article class="panel"><div class="panel-head"><div><h3>সাম্প্রতিক verified purchases</h3><p class="muted">Token ও user identifiers hash করা অবস্থায় দেখানো হয়</p></div></div><div class="table-wrap"><table><thead><tr><th>Product</th><th>Type</th><th>Purchase month</th><th>Active</th><th>Acknowledged</th><th>Updated</th><th></th></tr></thead><tbody id="supportTable"></tbody></table></div></article>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+  <div class="modal" id="editorModal" aria-hidden="true"><div class="modal-card"><div class="modal-head"><div><p class="kicker" id="modalKicker">Editor</p><h2 id="modalTitle">তথ্য সম্পাদনা</h2></div><button class="icon-btn" id="modalCloseBtn" aria-label="বন্ধ করুন">×</button></div><form id="editorForm" class="form-grid modal-body"></form></div></div>
+  <script src="/js/app.js" defer></script>
+</body>
+</html>

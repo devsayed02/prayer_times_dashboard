@@ -1,0 +1,23 @@
+{
+  "name": "prayer-times-admin-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Secure Node.js operations dashboard for the Prayer Times app",
+  "main": "server.js",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENV=development node --watch server.js",
+    "check": "node --check server.js && node --check public/js/app.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "firebase-admin": "14.4.0"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
+  }
+}
