@@ -165,7 +165,7 @@ async function loadAnalytics(force = false) {
     statCard('সক্রিয় ২৪ ঘণ্টা', data.activeUsers?.last24h, '◷', '#ecfdf3', '#039855'),
     statCard('সক্রিয় ৭ দিন', data.activeUsers?.last7d, '7', '#fff7ed', '#dc6803'),
     statCard('সক্রিয় ৩০ দিন', data.activeUsers?.last30d, '30', '#f5f3ff', '#7c3aed'),
-    statCard('Delivery success', `${rate}%`, '✓', '#ecfdf3', '#039855')
+    statCard('FCM acceptance', `${rate}%`, '✓', '#ecfdf3', '#039855')
   ].join('');
   renderTrend('analyticsTrend', data.registrationTrend || []);
   renderDistribution('platformDistribution', data.platformDistribution || [], 'platform');
@@ -196,21 +196,34 @@ function renderDistribution(id, items, labelKey) {
 }
 
 async function loadNotifications() {
-  const items = await api('/api/notifications');
+  const [items, metrics] = await Promise.all([
+    api('/api/notifications'),
+    api('/api/notifications/metrics')
+  ]);
+  document.getElementById('notificationStats').innerHTML = [
+    statCard('মোট campaign', metrics.campaigns, '◉'),
+    statCard('Targeted devices', metrics.targeted, '◎'),
+    statCard('App received', metrics.received, '↓', '#ecfdf3', '#039855'),
+    statCard('Opened', metrics.opened, '↗', '#fff7ed', '#dc6803'),
+    statCard('Open rate', `${metrics.openRate || 0}%`, '%', '#f5f3ff', '#7c3aed')
+  ].join('');
   document.getElementById('notificationHistory').innerHTML = items.length
-    ? items.map(item => `<div class="timeline-item ${item.status === 'success' ? '' : 'fail'}"><i></i><div><div class="timeline-head"><strong>${escapeHtml(item.title || 'Untitled')}</strong><button class="mini-btn danger" data-action="delete-notification" data-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.title || 'Notification')} history delete করুন">Delete</button></div><p>${escapeHtml(item.body || '')}</p><div class="timeline-meta"><small>${escapeHtml(item.target || 'unknown')} · ${formatDateTime(item.timestamp)} · ${escapeHtml(item.status || 'unknown')}</small>${notificationAudienceBadge(item)}</div></div></div>`).join('')
+    ? items.map(item => `<div class="timeline-item ${item.status === 'success' ? '' : 'fail'}"><i></i><div><div class="timeline-head"><strong>${escapeHtml(item.title || 'Untitled')}</strong><button class="mini-btn danger" data-action="delete-notification" data-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.title || 'Notification')} history delete করুন">Delete</button></div><p>${escapeHtml(item.body || '')}</p><div class="timeline-meta"><small>${escapeHtml(item.target || 'unknown')} · ${formatDateTime(item.timestamp)} · ${escapeHtml(item.status || 'unknown')}</small>${notificationTrackingBadges(item)}</div></div></div>`).join('')
     : '<div class="empty-state">কোনো notification history নেই</div>';
 }
 
-function notificationAudienceBadge(item) {
-  const count = Number(item.targetedCount);
-  if (Number.isFinite(count) && count >= 0) {
-    return `<span class="audience-badge">Targeted: ${formatNumber(count)} device${count === 1 ? '' : 's'}</span>`;
+function notificationTrackingBadges(item) {
+  const targeted = Number(item.targetedCount);
+  const received = Number(item.receivedCount);
+  const opened = Number(item.openedCount);
+  const targetedLabel = Number.isFinite(targeted) && targeted >= 0
+    ? formatNumber(targeted)
+    : item.target === 'single_user' ? '১' : 'তথ্য নেই';
+  if (!Number.isFinite(received) || !Number.isFinite(opened)) {
+    return `<span class="tracking-badges"><span class="audience-badge">Targeted: ${targetedLabel}</span><span class="audience-badge unavailable">Tracking: legacy</span></span>`;
   }
-  if (item.target === 'single_user') {
-    return '<span class="audience-badge">Targeted: ১ device</span>';
-  }
-  return '<span class="audience-badge unavailable">Targeted: তথ্য নেই</span>';
+  const openRate = received > 0 ? (opened / received * 100).toFixed(1) : '0.0';
+  return `<span class="tracking-badges"><span class="audience-badge">Targeted: ${targetedLabel}</span><span class="audience-badge received">Received: ${formatNumber(received)}</span><span class="audience-badge opened">Opened: ${formatNumber(opened)} (${openRate}%)</span></span>`;
 }
 
 async function sendNotification(event) {

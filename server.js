@@ -287,8 +287,15 @@ app.get('/api/analytics', asyncRoute(async (_req, res) => {
 
   let success = 0;
   let failed = 0;
+  let targeted = 0;
+  let received = 0;
+  let opened = 0;
   for (const document of logsSnapshot.docs) {
-    document.data().status === 'success' ? success += 1 : failed += 1;
+    const data = document.data();
+    data.status === 'success' ? success += 1 : failed += 1;
+    targeted += number(data.targetedCount, 0, 0);
+    received += number(data.receivedCount, 0, 0);
+    opened += number(data.openedCount, 0, 0);
   }
 
   const trend = Array.from({ length: 30 }, (_, index) => {
@@ -300,7 +307,14 @@ app.get('/api/analytics', asyncRoute(async (_req, res) => {
     data: {
       totalUsers: devicesSnapshot.size,
       activeUsers,
-      notificationStats: { total: success + failed, success, fail: failed },
+      notificationStats: {
+        total: success + failed,
+        success,
+        fail: failed,
+        targeted,
+        received,
+        opened
+      },
       platformDistribution: ranked(platform, 'platform'),
       appVersionDistribution: ranked(versions, 'version'),
       brandDistribution: ranked(brands, 'brand').slice(0, 10),
@@ -325,18 +339,34 @@ app.get('/api/notifications', asyncRoute(async (req, res) => {
   res.json({ success: true, data: snapshot.docs.map(documentData) });
 }));
 
+app.get('/api/notifications/metrics', asyncRoute(async (_req, res) => {
+  const snapshot = await db.collection('notification_logs').get();
+  const metrics = snapshot.docs.reduce((totals, document) => {
+    const data = document.data();
+    totals.campaigns += 1;
+    totals.targeted += number(data.targetedCount, 0, 0);
+    totals.received += number(data.receivedCount, 0, 0);
+    totals.opened += number(data.openedCount, 0, 0);
+    if (data.status === 'success') totals.accepted += 1;
+    if (data.status === 'fail') totals.failed += 1;
+    return totals;
+  }, { campaigns: 0, accepted: 0, failed: 0, targeted: 0, received: 0, opened: 0 });
+  metrics.openRate = metrics.received > 0
+    ? Number((metrics.opened / metrics.received * 100).toFixed(1))
+    : 0;
+  res.json({ success: true, data: metrics });
+}));
+
 app.delete('/api/notifications/:id', asyncRoute(async (req, res) => {
   const notificationId = validId(req.params.id);
   const reference = db.collection('notification_logs').doc(notificationId);
-  await db.runTransaction(async transaction => {
-    const snapshot = await transaction.get(reference);
-    if (!snapshot.exists) {
-      const error = new Error('Notification history record not found.');
-      error.statusCode = 404;
-      throw error;
-    }
-    transaction.delete(reference);
-  });
+  const snapshot = await reference.get();
+  if (!snapshot.exists) {
+    const error = new Error('Notification history record not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+  await db.recursiveDelete(reference);
   res.json({ success: true, message: 'Notification history deleted from Firebase.' });
 }));
 
@@ -355,7 +385,9 @@ app.post('/api/notifications/send', asyncRoute(async (req, res) => {
   const targetedCount = target === 'single_user'
     ? 1
     : await collectionCount('device_tokens');
-  const data = { type: 'push' };
+  const campaignId = crypto.randomUUID();
+  const analyticsLabel = `campaign_${campaignId.replaceAll('-', '')}`;
+  const data = { type: 'push', campaignId };
   if (imageUrl) data.imageUrl = imageUrl;
   if (actionUrl) data.actionUrl = actionUrl;
 
@@ -370,18 +402,46 @@ app.post('/api/notifications/send', asyncRoute(async (req, res) => {
         ...(imageUrl ? { imageUrl } : {})
       }
     },
+    fcmOptions: { analyticsLabel },
     ...(target === 'single_user' ? { token: fcmToken } : { topic: 'all_users' })
   };
 
-  let log;
+  const logReference = db.collection('notification_logs').doc(campaignId);
+  await logReference.set({
+    timestamp: FieldValue.serverTimestamp(),
+    target,
+    targetedCount,
+    receivedCount: 0,
+    openedCount: 0,
+    title,
+    body,
+    imageUrl,
+    actionUrl,
+    analyticsLabel,
+    campaignId,
+    status: 'sending'
+  });
+
   try {
     const messageId = await messaging.send(message);
-    log = { timestamp: FieldValue.serverTimestamp(), target, targetedCount, title, body, imageUrl, actionUrl, status: 'success', messageId };
-    await db.collection('notification_logs').add(log);
-    res.json({ success: true, message: `Notification accepted for ${targetedCount} targeted device${targetedCount === 1 ? '' : 's'}.`, messageId, targetedCount });
+    await logReference.update({
+      status: 'success',
+      messageId,
+      sentAt: FieldValue.serverTimestamp()
+    });
+    res.json({
+      success: true,
+      message: `Notification accepted for ${targetedCount} targeted device${targetedCount === 1 ? '' : 's'}.`,
+      messageId,
+      campaignId,
+      targetedCount
+    });
   } catch (error) {
-    log = { timestamp: FieldValue.serverTimestamp(), target, targetedCount, title, body, imageUrl, actionUrl, status: 'fail', error: text(error.message, 500) };
-    await db.collection('notification_logs').add(log).catch(() => {});
+    await logReference.update({
+      status: 'fail',
+      error: text(error.message, 500),
+      failedAt: FieldValue.serverTimestamp()
+    }).catch(() => {});
     throw error;
   }
 }));
